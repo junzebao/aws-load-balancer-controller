@@ -2,6 +2,7 @@ package elbv2
 
 import (
 	"context"
+
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/util/sets"
 	elbv2api "sigs.k8s.io/aws-load-balancer-controller/apis/elbv2/v1beta1"
@@ -85,6 +86,9 @@ func (s *targetGroupBindingSynthesizer) findK8sTargetGroupBindings(ctx context.C
 
 	tgbs := make([]*elbv2api.TargetGroupBinding, 0, len(tgbList.Items))
 	for i := range tgbList.Items {
+		if val, ok := (&tgbList.Items[i]).ObjectMeta.Annotations["alb.ingress.kubernetes.io/ignore"]; ok && val == "true" {
+			continue
+		}
 		tgbs = append(tgbs, &tgbList.Items[i])
 	}
 	return tgbs, nil
